@@ -1,7 +1,7 @@
 const pg = require('pg');
-const Db = require('./Db');
+const Db_Buddy = require('./Db_Buddy');
 
-class DbPostgresql extends Db
+class Db_Postgresql extends Db_Buddy
 {
   constructor(config)
   {
@@ -46,4 +46,4 @@ class DbPostgresql extends Db
   }
 }
 
-module.exports = DbPostgresql;
+module.exports = Db_Postgresql;

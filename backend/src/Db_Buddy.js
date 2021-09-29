@@ -1,6 +1,6 @@
 const Utils = require('../utils');
 
-class Db
+class Db_Buddy
 {
   constructor()
   {
@@ -1282,4 +1282,4 @@ class Db
   }
 }
 
-module.exports = Db;
+module.exports = Db_Buddy;
