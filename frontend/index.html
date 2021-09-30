@@ -1,0 +1,30 @@
+<html>
+  <head>
+    <script type="module">
+      import Person from "/rpc-client?class=Person";
+
+      window.onload = main;
+
+      function main()
+      {
+        const send_btn = document.getElementById("send_btn");
+        send_btn.addEventListener("click", OnClick_Send_Btn);
+      }
+
+      async function OnClick_Send_Btn()
+      {
+        const res = await Person.someFunction("mary had", "a", "little lamb");
+
+        const res_div = document.getElementById("res_div");
+        res_div.innerText = JSON.stringify(res);
+      }
+    </script>
+  </head>
+  <body>
+    Hello World!
+    <div>
+      <button id="send_btn">Send</button>
+      <div id="res_div"></div>
+    </div>
+  </body>
+</html>

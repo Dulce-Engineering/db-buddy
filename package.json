@@ -1,0 +1,32 @@
+{
+  "name": "db-buddy",
+  "version": "1.0.0",
+  "description": "Yet another database abstraction class. This one is designed to make it easier to work with SQL. Also maps results to classes.",
+  "main": "backend/index.js",
+  "scripts": {
+    "start": "node backend/index.js",
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dulce-Engineering/db-buddy.git"
+  },
+  "keywords": [
+    "db",
+    "orm",
+    "javascript",
+    "express",
+    "sql"
+  ],
+  "author": "Esteban Ramirez",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Dulce-Engineering/db-buddy/issues"
+  },
+  "homepage": "https://github.com/Dulce-Engineering/db-buddy#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "rpc-buddy": "^1.2.1",
+    "sqlite3": "^5.0.2"
+  }
+}
