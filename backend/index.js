@@ -3,7 +3,7 @@ const RPC_Buddy = require('rpc-buddy');
 const Person = require('./Person');
 const Db_Sqlite = require("./src/Db_Sqlite");
 
-const db = new Db_Sqlite();
+const db = new Db_Sqlite({filename: ":memory:"});
 Person.Init(db);
 
 const app = express();

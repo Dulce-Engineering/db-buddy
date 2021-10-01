@@ -6,7 +6,7 @@ class Db_Sqlite extends Db_Buddy
   constructor(config)
   {
     super();
-    this.client = new sqlite3.Database(":memory:");
+    this.client = new sqlite3.Database(config.filename, config.model);
   }
 
   Get_Row_Count(dbRes)
