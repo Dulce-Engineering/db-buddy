@@ -1,6 +1,10 @@
 const express = require('express');
 const RPC_Buddy = require('rpc-buddy');
 const Person = require('./Person');
+const Db_Sqlite = require("./src/Db_Sqlite");
+
+const db = new Db_Sqlite();
+Person.Init(db);
 
 const app = express();
 app.use(express.json());
@@ -13,7 +17,9 @@ const rpc_buddy = new RPC_Buddy
   '/rpc-client',
   [Person],
   [
-    {name: "Person.someFunction"},
+    {name: "Person.Insert", inject: [db]},
+    {name: "Person.Get_Max_Age", inject: [db]},
+    {name: "Person.Get_All", inject: [db]},
   ],
   RPC_Buddy.Express
 );
@@ -22,5 +28,5 @@ const port = 80;
 app.listen(port, Listen);
 function Listen()
 {
-  console.log(`RPC Buddy listening at http://localhost:${port}`);
+  console.log(`Db Boddy listening at http://localhost:${port}`);
 }

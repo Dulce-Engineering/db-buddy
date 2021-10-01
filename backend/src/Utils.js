@@ -1,5 +1,3 @@
-const fetch = require('node-fetch');
-const parser = require('xml2json');
 
 class Utils
 {
@@ -401,28 +399,6 @@ class Utils
     return res;
   }
 
-  static xmlToJson(xmlStr)
-  {
-    let jsonStr, res;
-
-    try 
-    {
-      jsonStr = parser.toJson(xmlStr);
-    }
-    catch(e)
-    {
-      jsonStr = null;
-      console.error("Utils.xmlToJson():", e);
-    }
-
-    if (jsonStr)
-    {
-      res = JSON.parse(jsonStr);
-    }
-
-    return res;
-  }
-
   static to2DigitStr(number)
   {
     let res;
@@ -453,87 +429,6 @@ class Utils
     }
 
     return params;
-  }
-
-  static fetchPostJson(url, xApiKey, bodyObj, auth)
-  {
-    let body;
-
-    if (bodyObj)
-    {
-      body = JSON.stringify(bodyObj);
-    }
-
-    return Utils.fetchJson(url, "POST", xApiKey, body, auth);
-  }
-  
-  static fetchGetJson(url, xApiKey)
-  {
-    return Utils.fetchJson(url, "GET", xApiKey);
-  }
-  
-  static async fetchJson(url, method, xApiKey, body, auth)
-  {
-    let res = null;
-    const options = Utils.setOptions(method, xApiKey, 'application/json', body, auth);
-    
-    const httpRes = await fetch(url, options);
-    if (httpRes)
-    {
-      const textRes = await httpRes.text();
-      res = JSON.parse(textRes);
-    }
-
-    return res;
-  }
-  
-  static async fetchGetXml(url)
-  {
-    let res = null;
-    const options = Utils.setOptions("GET", null, 'application/soap+xml');
-    
-    const httpRes = await fetch(url, options);
-    if (httpRes)
-    {
-      const textRes = await httpRes.text();
-      if (httpRes.ok)
-      {
-        res = Utils.xmlToJson(textRes);
-      }
-      else
-      {
-        console.error("Utils.fetchGetXml(): HTTP status, data -", httpRes.status, textRes);
-      }
-    }
-
-    return res;
-  }
-
-  static async fetch(url, method, xApiKey, body)
-  {
-    let res = null;
-    const options =
-    {
-      method,
-      headers: 
-      {
-        'Content-Type': 'application/json',
-        'x-api-key': xApiKey
-      }
-    };
-
-    if (body)
-    {
-      options.body = body;
-    }
-    
-    const httpRes = await fetch(url, options);
-    if (httpRes)
-    {
-      res = await httpRes.text();
-    }
-
-    return res;
   }
   
   static setOptions(method, xApiKey, contentType, body, auth)

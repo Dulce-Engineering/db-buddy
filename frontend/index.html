@@ -7,24 +7,81 @@
 
       function main()
       {
-        const send_btn = document.getElementById("send_btn");
-        send_btn.addEventListener("click", OnClick_Send_Btn);
+        const max_btn = document.getElementById("max_btn");
+        max_btn.addEventListener("click", OnClick_Send_Btn);
+        const insert_btn = document.getElementById("insert_btn");
+        insert_btn.addEventListener("click", OnClick_Insert_Btn);
+
+        Update_Table();
+      }
+
+      async function OnClick_Insert_Btn()
+      {
+        const name = document.getElementById("name").value;
+        const age = document.getElementById("age").value;
+        const dob = document.getElementById("dob").value;
+        const height = document.getElementById("height").value;
+        const res = await Person.Insert(name, age, dob, height);
+
+        const insert_res_div = document.getElementById("insert_res_div");
+        insert_res_div.innerText = JSON.stringify(res);
+
+        Update_Table();
       }
 
       async function OnClick_Send_Btn()
       {
-        const res = await Person.someFunction("mary had", "a", "little lamb");
+        const res = await Person.Get_Max_Age();
 
-        const res_div = document.getElementById("res_div");
-        res_div.innerText = JSON.stringify(res);
+        const max_res_div = document.getElementById("max_res_div");
+        max_res_div.innerText = JSON.stringify(res);
+      }
+
+      async function Update_Table()
+      {
+        let rows_html = "";
+        const persons = await Person.Get_All();
+        for (const person of persons)
+        {
+          const html = `
+            <tr>
+              <td>${person.name}</td>
+              <td>${person.age}</td>
+              <td>${person.dob}</td>
+              <td>${person.height}</td>
+            </tr>
+          `;
+          rows_html += html;
+        }
+        document.getElementById("table_body").innerHTML = rows_html;
       }
     </script>
   </head>
   <body>
-    Hello World!
     <div>
-      <button id="send_btn">Send</button>
-      <div id="res_div"></div>
+      <label>Name:</label> <input id="name" type="text">
+      <label>Age:</label> <input id="age" type="number">
+      <label>DOB:</label> <input id="dob" type="date">
+      <label>Height:</label> <input id="height" type="number" step="0.01">
+      <button id="insert_btn">Insert</button> id = <span id="insert_res_div"></span>
+    </div>
+    <div>
+      <button id="max_btn">Get Max Age</button> = <span id="max_res_div"></span>
+    </div>
+    <div>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Age</th>
+            <th>DOB</th>
+            <th>Height</th>
+          </tr>
+        </thead>
+        <tbody id="table_body">
+          <tr><td colspan="4">No data yet.</td></tr>
+        </tbody>
+      </table>
     </div>
   </body>
 </html>

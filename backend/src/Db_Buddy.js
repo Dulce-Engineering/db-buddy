@@ -1,42 +1,55 @@
-const Utils = require('../utils');
+const Utils = require('./Utils');
 
 class Db_Buddy
 {
   constructor()
   {
-    this.insertRows = this.insertRows.bind(this);
   }
 
-  connect()
+  Connect()
   {
   }
 
-  async query(sql, params)
+  Get_Row_Count(dbRes)
+  {
+  }
+
+  Get_Rows(dbRes)
+  {
+  }
+
+  Build_Insert_SQL(tableName, paramNames, paramPlaceHolders, ignoreId)
+  {
+    const sql = 
+      "insert into " + tableName + 
+      " (" + paramNames + ") " +
+      "values (" + paramPlaceHolders + ") ";
+
+    return sql;
+  }
+
+  Build_Param_Placeholders(name)
+  {
+  }
+
+  async Query(sql, params)
   {
     this.lastQuery = '';
   }
 
-  async selectValue(sql, params)
+  async Run(sql, params)
   {
-    let res = null;
-
-    const dbRes = await this.selectValues(sql, params);
-    if (dbRes && dbRes.length > 0) 
-    {
-      res = dbRes[0];
-    }
-    return res;
   }
 
-  async selectValues(sql, params)
+  async Select_Values(sql, params)
   {
     let res;
 
-    const dbRes = await this.query(sql, params);
-    if (dbRes && dbRes.rowCount > 0)
+    const dbRes = await this.Query(sql, params);
+    if (dbRes && this.Get_Row_Count(dbRes) > 0)
     {
       res = [];
-      for (const row of dbRes.rows)
+      for (const row of this.Get_Rows(dbRes))
       {
         const colNames = Object.keys(row);
         const firstColName = colNames[0];
@@ -48,11 +61,23 @@ class Db_Buddy
     return res;
   }
 
-  async selectRow(sql, params)
+  async Select_Value(sql, params)
   {
     let res = null;
 
-    const rows = await this.selectRows(sql, params);
+    const dbRes = await this.Select_Values(sql, params);
+    if (dbRes && dbRes.length > 0) 
+    {
+      res = dbRes[0];
+    }
+    return res;
+  }
+
+  async Select_Row(sql, params)
+  {
+    let res = null;
+
+    const rows = await this.Select_Rows(sql, params);
     if (rows && rows.length > 0) 
     {
       res = rows[0];
@@ -61,25 +86,52 @@ class Db_Buddy
     return res;
   }
 
-  async selectRows(sql, params)
+  async Select_Rows(sql, params)
   {
     let res;
 
-    const dbRes = await this.query(sql, params);
-    if (dbRes && dbRes.rowCount > 0)
+    const dbRes = await this.Query(sql, params);
+    if (dbRes && this.Get_Row_Count(dbRes) > 0)
     {
-      res = dbRes.rows;
+      res = this.Get_Rows(dbRes);
+    }
+
+    return res;
+  }
+
+  // return all rows as an array of objects of the given type
+  async Select_Objs(classType, sql, params)
+  {
+    let res;
+
+    const rows = await this.Select_Rows(sql, params);
+    if (rows && rows.length > 0) 
+    {
+      res = [];
+      for (const row of rows)
+      {
+        const newObj = new classType();
+        if (classType.fields)
+        {
+          Db_Buddy.toDbObj(classType.fields, newObj, row);
+        }
+        else
+        {
+          Object.assign(newObj, row);
+        }
+        res.push(newObj);
+      }
     }
 
     return res;
   }
 
   // return the first row as an object of the specified type
-  async selectObj(classType, sql, params)
+  async Select_Obj(classType, sql, params)
   {
     let res = null;
 
-    const dbRes = await this.selectObjs(classType, sql, params);
+    const dbRes = await this.Select_Objs(classType, sql, params);
     if (dbRes && dbRes.length > 0) 
     {
       res = dbRes[0];
@@ -88,27 +140,8 @@ class Db_Buddy
     return res;
   }
 
-  // return all rows as an array of objects of the given type
-  async selectObjs(classType, sql, params)
-  {
-    let res;
-
-    const rows = await this.selectRows(sql, params);
-    if (rows && rows.length > 0) 
-    {
-      res = [];
-      for (const row of rows)
-      {
-        const newObj = new classType(row);
-        res.push(newObj);
-      }
-    }
-
-    return res;
-  }
-
   // insert the given object
-  async insert(tableName, fields, obj, skipUndefined, ignoreId)
+  async Insert(tableName, fields, obj, skipUndefined, ignoreId)
   {
     let paramNames, paramPlaceHolders, counter = 1, paramVals = [], res = false;
     if (!fields)
@@ -126,28 +159,21 @@ class Db_Buddy
         if (!skipUndefined || fieldValue != undefined)
         {
           paramNames = Utils.appendStr(paramNames, columnName, ", ");
-          paramPlaceHolders = Utils.appendStr(paramPlaceHolders, "$" + counter, ", ");
+          paramPlaceHolders = Utils.appendStr
+            (paramPlaceHolders, this.Build_Param_Placeholders(counter), ", ");
           paramVals.push(fieldValue);
           counter++;
         }
       }
     }
 
-    let sql = 
-      "insert into " + tableName + 
-      " (" + paramNames + ") " +
-      "values (" + paramPlaceHolders + ") ";
-    if (!ignoreId)
-    {
-      sql += "returning id";
-    }
-    
-    const dbRes = await this.query(sql, paramVals);
-    if (dbRes && dbRes.rowCount > 0)
+    const sql = this.Build_Insert_SQL(tableName, paramNames, paramPlaceHolders, ignoreId);    
+    const dbRes = await this.Run(sql, paramVals);
+    if (dbRes && this.Get_Row_Count(dbRes) > 0)
     {
       if (!ignoreId)
       {
-        const newId = dbRes.rows[0].id;
+        const newId = this.Get_Rows(dbRes)[0].id;
         obj.id = newId;
       }
       res = true;
@@ -156,32 +182,32 @@ class Db_Buddy
     return res;
   }
 
-  // insert the given object
-  insertRow(tableName, obj)
+  // insert the given object into the given table
+  Insert_Row(tableName, obj)
   {
-    return this.insert(tableName, null, obj, false, false);
+    return this.Insert(tableName, null, obj, false, false);
   }
 
   // insert the given object
-  insertObj(obj, skipUndefined)
+  Insert_Obj(obj, skipUndefined)
   {
-    return this.insert(obj.constructor.table, obj.constructor.fields, obj, skipUndefined, obj.constructor.ignoreId);
+    return this.Insert(obj.constructor.table, obj.constructor.fields, obj, skipUndefined, obj.constructor.ignoreId);
   }
 
   // insert multiple objects
-  async insertObjs(objs)
+  async Insert_Objs(objs)
   {
     let res = true;
 
     for (const obj of objs)
     {
-      res = res && await this.insertObj(obj, true);
+      res = res && await this.Insert_Obj(obj, true);
     }
 
     return res;
   }
 
-  async updateObj(obj, skipUndefined, where, params)
+  async Update_Obj(obj, skipUndefined, where, params)
   {
     let paramNames, counter = 1, paramVals = [], res = false;
     const tableName = obj.constructor.table;
@@ -222,8 +248,8 @@ class Db_Buddy
         " set " + paramNames +
         " where " + where;
       
-      const dbRes = await this.query(sql, paramVals);
-      if (dbRes && dbRes.rowCount > 0)
+      const dbRes = await this.Query(sql, paramVals);
+      if (dbRes && this.Get_Row_Count(dbRes) > 0)
       {
         res = true;
       }
@@ -232,29 +258,41 @@ class Db_Buddy
     return res;
   }
 
-  async deleteObj(obj)
+  async Delete(tableName, id)
+  {
+    let res = false;
+
+    if (tableName && id)
+    {
+      const dbRes = await this.Query("delete from " + tableName + " where id = $1", [id]);
+      res = dbRes && this.Get_Row_Count(dbRes) > 0;
+    }
+
+    return res;
+  }
+
+  async Delete_Obj(obj)
   {
     let res = false;
 
     if (obj && obj.id)
     {
       const tableName = obj.constructor.table;
-      const dbRes = await this.query("delete from " + tableName + " where id = $1", [obj.id]);
-      res = dbRes && dbRes.rowCount > 0;
+      const id = obj.id;
+      res = this.Delete(tableName, id);
     }
 
     return res;
   }
 
-  async deleteById(classType, id)
+  async Delete_By_Id(classType, id)
   {
     let res = false;
 
     if (classType && id)
     {
       const tableName = classType.table;
-      const dbRes = await this.query("delete from " + tableName + " where id = $1", [id]);
-      res = dbRes && dbRes.rowCount > 0;
+      res = this.Delete(tableName, id);
     }
 
     return res;

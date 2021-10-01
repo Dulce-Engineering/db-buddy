@@ -10,19 +10,52 @@ class Db_Postgresql extends Db_Buddy
     this.client.connect();
   }
 
-  /**
-   * @param {string} sql 
-   * @param {any[]} params 
-   * @param {string|undefined} rowMode - "array"
-   * @return {Promise<{command: string; rowCount:number; rows: any[]}>}
-   */
-  query(sql, params, rowMode)
+  Get_Row_Count(dbRes)
   {
-    this.lastQuery = {sql, params};
-    return this.client.query(sql, params, rowMode);
+    return dbRes.rowCount;
   }
 
-  async selectValues(sql, params)
+  Get_Rows(dbRes)
+  {
+    return dbRes.rows;
+  }
+
+  Build_Param_Placeholders(name)
+  {
+    return "$" + name;
+  }
+
+  Build_Insert_SQL(tableName, paramNames, paramPlaceHolders, ignoreId)
+  {
+    let sql = 
+      "insert into " + tableName + 
+      " (" + paramNames + ") " +
+      "values (" + paramPlaceHolders + ") ";
+    if (!ignoreId)
+    {
+      sql += "returning id";
+    }
+
+    return sql;
+  }
+
+  Run(sql, params)
+  {
+    return this.Query(sql, params);
+  }
+
+  Exec(sql, params)
+  {
+    return this.Query(sql, params);
+  }
+
+  Query(sql, params, rowMode)
+  {
+    this.lastQuery = {sql, params};
+    return this.client.Query(sql, params, rowMode);
+  }
+
+  async Select_Values(sql, params)
   {
     let res;
     const pgQuery =
@@ -32,11 +65,11 @@ class Db_Postgresql extends Db_Buddy
       rowMode: "array"
     };
 
-    const dbRes = await this.query(pgQuery);
-    if (dbRes && dbRes.rowCount > 0)
+    const dbRes = await this.Query(pgQuery);
+    if (dbRes && this.Get_Row_Count(dbRes) > 0)
     {
       res = [];
-      for (const row of dbRes.rows)
+      for (const row of this.Get_Rows(dbRes))
       {
         res.push(row[0]);
       }
