@@ -2,10 +2,9 @@
   "name": "db-buddy",
   "version": "1.0.0",
   "description": "Yet another database abstraction class. This one is designed to make it easier to work with SQL. Also maps results to classes.",
-  "main": "backend/index.js",
+  "main": "Db_Buddy.js",
   "scripts": {
-    "start": "node backend/index.js",
-    "test": "mocha"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
@@ -25,8 +24,6 @@
   },
   "homepage": "https://github.com/Dulce-Engineering/db-buddy#readme",
   "dependencies": {
-    "express": "^4.17.1",
-    "rpc-buddy": "^1.2.1",
     "sqlite3": "^5.0.2"
   }
 }
